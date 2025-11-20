@@ -7,7 +7,7 @@ Ganxue Server 是一个专为Golang学习打造的网页后端项目，集成了
 [敢学](https://ganxue.top)
 
 ## 前端项目
-[Ganxue Web](https://github.com/gangantongxue/ganxue/ganxue-web)
+[Ganxue Web](../ganxue-web)
 
 ## 功能特性
 ### 用户认证

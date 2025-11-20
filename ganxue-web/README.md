@@ -21,6 +21,6 @@ GanXue-Web是一个专注于Golang语言教学的交互式学习平台，采用�
 🔐 JWT双令牌认证机制
 
 **后端**  
-⚙️ 基于[GanXue-Server](https://github.com/gangantongxue/ganxue/ganxue-server)  
+⚙️ 基于[GanXue-Server](../ganxue-server)  
 🚀 Hertz框架 + GORM ORM  
 🗄️ MySQL + Redis + MongoDB
