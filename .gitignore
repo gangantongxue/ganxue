@@ -1,0 +1,11 @@
+.env
+.claude
+.vscode
+.idea
+/ganxue-server/.idea
+/ganxue-server/.vscode
+/ganxue-server/log
+/ganxue-web/.vscode
+/ganxue-web/.idea
+CLAUDE.md
+ganxue-server/static/download/MinGW.zip

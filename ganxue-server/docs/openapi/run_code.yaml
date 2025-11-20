@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: Run Code
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080/auth'
+paths:
+  /run-code:
+    post:
+      summary: Run Code
+      description: Run code and return execution results
+      operationId: runCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Code ID
+                  example: 0000
+                code:
+                  type: string
+                  description: Code to execute
+                  example: package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello world!")\n}
+      responses:
+        '100':
+          description: Processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "等待运行中..."
+                    description: Processing status message
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "运行成功"
+                    description: Success message
+                  output:
+                    type: string
+                    description: Code execution output
+                    example: "Hello world!\n"
+        '206':
+          description: Partial Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "运行失败"
+                    description: Status message
+                  output:
+                    type: string
+                    description: Code execution output or error
+                    example: "Please input your name:\nPlease input your age:\nHello, my name is gangan, I am 20 years old.\n"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "解析请求体失败"
+                    description: Error message
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "从队列中获取结果失败"
+                    description: Error message
+                  output:
+                    type: string
+                    description: Error details (optional)
+                    example: "执行超时"
+      security:
+        - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

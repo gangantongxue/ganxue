@@ -1,0 +1,22 @@
+ganxue.top {
+    root * /home/ganxue-web
+
+    # 禁止访问隐藏文件
+    @hidden {
+        file is_hidden
+    }
+    handle @hidden {
+        respond "Forbidden" 403
+    }
+
+    handle_path /api/* {
+        reverse_proxy ganxue_server:8080
+    }
+
+    # 处理前端路由和静态文件
+    handle {
+        try_files {path} {path}/ /index.html
+        file_server
+        header Cache-Control "no-cache"
+    }
+}

@@ -1,0 +1,81 @@
+services:
+  ganxue_server:
+    build:
+      context: ./ganxue-server
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - webnet
+    depends_on:
+      - mysql
+      - redis
+      - mongo
+    env_file:
+      - .env
+    volumes:
+      - /var/log/ganxue:/home/ganxue/ganxue-server/log
+    command: ["./wait_for_services.sh", "mysql:3306", "redis:6379", "mongo:27017", "--", "./server"]
+  ganxue_web:
+    build:
+      context: ./ganxue-web
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - webnet
+    depends_on:
+      - ganxue_server
+  ganxue_runcode:
+    build:
+      context: ./ganxue-runcode
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    networks:
+      - webnet
+    command: ["./wait_for_services.sh", "redis:6379", "--", "./ganxue-runcode"]
+  mysql:
+    image: mysql:8.0
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ganxue_server
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - webnet
+  redis:
+    image: redis:latest
+    ports:
+      - 6380:6379
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/var/lib/redis
+    networks:
+      - webnet
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27018:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-data:/var/lib/mongo
+    networks:
+      - webnet
+
+volumes:
+  mysql-data:
+  redis-data:
+  mongo-data:
+
+networks:
+  webnet:

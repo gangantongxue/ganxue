@@ -1,0 +1,83 @@
+openapi: 3.0.0
+info:
+  title: Ganxue Server API
+  description: Ganxue Server API for updating username functionality.
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080/auth'
+paths:
+  /update-username:
+    post:
+      summary: 更新用户名
+      description: 用户更新自己的用户名，需要身份验证。
+      operationId: updateUsername
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_username:
+                  type: string
+                  description: 新的用户名
+                  example: newusername
+                  minLength: 3
+                  maxLength: 20
+              required:
+                - new_username
+      responses:
+        '200':
+          description: 用户名更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 用户名更新成功
+                  data:
+                    type: object
+                    properties:
+                      user_name:
+                        type: string
+                        example: newusername
+        '400':
+          description: 请求错误，如用户名格式不正确
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 用户名格式不正确
+        '401':
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 未授权，请重新登录
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 服务器错误
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

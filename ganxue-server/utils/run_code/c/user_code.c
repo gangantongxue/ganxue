@@ -1,0 +1,21 @@
+#include <stdio.h>
+
+int main()
+{
+    // 定义变量，定义一个人的姓名，年龄，身高，体重，性别
+    char name[20];
+    int age;
+    float height;
+    double weight;
+    char sex;
+
+    printf("Please input your name, age, height, weight, sex :\n");
+
+    /*####################*/
+    scanf("%s %d %f %lf %c",name , &age,&height ,&weight ,&sex );
+
+    /*####################*/
+    printf("name: %s age: %d height: %.2f weight: %.2lf sex: %c\n",name , age, height,weight ,sex );
+    
+    return 0;
+}

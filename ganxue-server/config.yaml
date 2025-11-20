@@ -1,0 +1,22 @@
+mysql:
+  user: root
+  password: ${MYSQL_PASSWORD}
+  host: mysql
+  port: 3306
+  database: ganxue_server
+redis:
+  addr: redis:6379
+  password: ${REDIS_PASSWORD}
+  db: 0
+mongo:
+  host: mongo
+  port: 27017
+  username: root
+  password: ${MONGO_PASSWORD}
+  database: ganxue_server
+email:
+  from: "ganxue2025@163.com"
+  host: smtp.163.com
+  port: 465
+  username: "ganxue2025@163.com"
+  password: ${EMAIL_PASSWORD}
