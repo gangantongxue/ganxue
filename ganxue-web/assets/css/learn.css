@@ -150,9 +150,47 @@
 
 .output-content {
     margin: 0;
-    font-family: monospace;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     white-space: pre-wrap;
     color: #333;
+    background-color: #2d3436;
+    color: #dfe6e9;
+    padding: 15px;
+    border-radius: 5px;
+    min-height: 100px;
+    overflow-wrap: break-word;
+    border: none;
+    outline: none;
+    user-select: text;
+    pointer-events: none; /* 确保只读 */
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+/* 未运行代码时的提示信息样式 */
+.output-content.placeholder {
+    background-color: #343a40;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* 终端窗口效果增强 */
+.output-container {
+    padding: 0 !important;
+    background-color: transparent;
+}
+
+/* 在终端窗口中显示状态颜色 */
+.output-content.success {
+    color: #00b894;
+}
+
+.output-content.error {
+    color: #d63031;
+}
+
+.output-content.warning {
+    color: #fdcb6e;
 }
 
 .reset-btn:hover {

@@ -18,6 +18,8 @@
                     </div>
                     <div class="user-name" id="userName">加载中...</div>
                 </div>
+                <!-- 设置按钮隐藏 -->
+                <button class="settings-btn" id="settingsBtn" style="display: none;">设置</button>
                 <button class="logout-btn" id="logoutBtn">退出登录</button>
             </header>
             
@@ -57,6 +59,42 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- 用户设置悬浮窗口 -->
+    <div class="user-settings-modal" id="userSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">个人设置</h2>
+                <button class="close-btn" id="closeModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- 修改用户名部分 -->
+                <div class="settings-section">
+                    <h3 class="section-title">修改用户名</h3>
+                    <div class="current-username">当前用户名: <span id="modalCurrentUserName">加载中...</span></div>
+                    <div class="form-group">
+                        <label for="modalNewUsername">新用户名</label>
+                        <input type="text" id="modalNewUsername" placeholder="请输入新用户名（3-20个字符）" maxlength="20">
+                    </div>
+                    <button class="btn" id="modalUpdateUsernameBtn">修改用户名</button>
+                </div>
+                
+                <!-- 注销账户部分 -->
+                <div class="settings-section">
+                    <h3 class="section-title">注销账户</h3>
+                    <div class="danger-text">⚠️ 警告：注销账户后，您的所有数据将被删除且无法恢复！</div>
+                    <div class="form-group">
+                        <label for="modalConfirmPassword">请输入密码确认</label>
+                        <input type="password" id="modalConfirmPassword" placeholder="请输入密码以确认注销">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-danger" id="modalDeleteAccountBtn">确认注销账户</button>
+                        <button class="btn btn-secondary" id="modalCancelDeleteBtn">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="assets/js/home.js"></script>

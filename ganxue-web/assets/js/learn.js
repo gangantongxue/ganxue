@@ -202,8 +202,11 @@ function logout() {
 
 // 加载章节内容
 async function loadChapter(group, chapterId) {
-    // 清空输出区域内容
-    document.getElementById('outputContent').textContent = '';
+    // 设置输出区域为占位符状态
+    const outputContent = document.getElementById('outputContent');
+    outputContent.textContent = '代码运行输出将显示在这里...';
+    outputContent.classList.add('placeholder');
+    outputContent.classList.remove('success', 'error', 'warning');
     
     const docData = await getDocContent(group, chapterId);
     
@@ -333,19 +336,50 @@ async function submitCode() {
         outputContainer.classList.remove('collapsed');
         document.querySelector('.toggle-icon').style.transform = 'rotate(0deg)';
 
+        // 重置样式类
+        outputContent.classList.remove('placeholder', 'success', 'error', 'warning');
+
+        // 根据openapi文档处理正确的后端返回格式
         if (response.status === 200) {
-            outputContent.textContent = data.data;
-            showToast('代码提交成功', 'success');
+            // 200成功状态，显示output字段内容
+            const outputText = data.output || data.message || '执行成功';
+            outputContent.textContent = outputText;
+            outputContent.classList.add('success');
+            showToast(data.message || '代码提交成功', 'success');
         } else if (response.status === 206) {
-            outputContent.textContent = data.data;
-            showToast('答案错误', 'warning');
+            // 206部分成功（答案错误），显示output字段内容
+            const outputText = data.output || data.message || '答案错误';
+            outputContent.textContent = outputText;
+            outputContent.classList.add('warning');
+            showToast(data.message || '答案错误', 'warning');
+        } else if (response.status === 100) {
+            // 100处理中状态
+            outputContent.textContent = data.message || '处理中...';
+            outputContent.classList.add('warning');
+            showToast(data.message || '代码正在处理中', 'info');
         } else if (response.status === 400) {
+            // 400错误请求
+            outputContent.textContent = data.message || '请求参数错误';
+            outputContent.classList.add('error');
             showToast(data.message || '请求参数错误', 'error');
         } else if (response.status === 500) {
+            // 500服务器错误
+            const outputText = data.output ? `${data.message || '服务器错误'}: ${data.output}` : data.message || '服务器内部错误';
+            outputContent.textContent = outputText;
+            outputContent.classList.add('error');
             showToast(data.message || '服务器内部错误', 'error');
+        } else {
+            // 其他状态码
+            outputContent.textContent = data.message || data.output || `未知状态: ${response.status}`;
+            outputContent.classList.add('error');
+            showToast(`未知状态: ${response.status}`, 'error');
         }
     } catch (error) {
         console.error('提交代码失败:', error);
+        const outputContent = document.getElementById('outputContent');
+        outputContent.textContent = `请求失败: ${error.message || '未知错误'}`;
+        outputContent.classList.remove('placeholder', 'success', 'warning');
+        outputContent.classList.add('error');
         showToast('提交代码失败，请重试', 'error');
     }
 }

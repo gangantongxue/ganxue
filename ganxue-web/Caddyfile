@@ -1,5 +1,5 @@
-ganxue.top {
-    root * /home/ganxue-web
+localhost {
+    root * /home/ganxue/ganxue-web
 
     # 禁止访问隐藏文件
     @hidden {

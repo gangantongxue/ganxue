@@ -22,7 +22,7 @@ WORKDIR /home/ganxue/ganxue-runcode
 COPY --from=builder /app/ .
 RUN ls -al
 
-RUN chmod +x wait_for_services.sh
+# RUN chmod +x wait_for_services.sh
 RUN chmod +x ganxue-runcode
 
 

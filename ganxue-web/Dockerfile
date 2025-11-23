@@ -1,4 +1,4 @@
-FROM caddy:2.10.2-alpine
+FROM caddy:alpine
 
 WORKDIR /home/ganxue/ganxue-web
 

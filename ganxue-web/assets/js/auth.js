@@ -35,9 +35,12 @@ async function refreshToken() {
         }
         
         const data = await response.json();
-        // 更新短token
-        localStorage.setItem('shortToken', data.token);
-        return data.token;
+        // 更新UUID格式的短token，支持多种可能的返回字段名
+        const newToken = data?.token || data?.data?.token || data?.data?.short_token || '';
+        if (newToken) {
+            localStorage.setItem('shortToken', newToken);
+        }
+        return newToken;
     } catch (error) {
         console.error('刷新token失败:', error);
         // 如果刷新失败，可能需要重新登录
@@ -53,7 +56,7 @@ export async function authRequest(url, options = {}) {
         options.headers = {};
     }
     
-    // 添加短token到请求头
+    // 添加UUID格式的短token到请求头
     const shortToken = localStorage.getItem('shortToken');
     if (shortToken) {
         options.headers['Authorization'] = `Bearer ${shortToken}`;
@@ -153,7 +156,11 @@ export async function registerUser(userData) {
         const data = await response.json();
         
         if (response.ok) {
-            localStorage.setItem('shortToken', data.data.short_token);
+            // 存储UUID格式的短token，支持多种可能的返回字段名
+            const shortToken = data.data?.short_token || data.data?.token || '';
+            if (shortToken) {
+                localStorage.setItem('shortToken', shortToken);
+            }
             // 长token已由后端直接存入cookie，前端不需要管理
             return { success: true, data };
         } else {
@@ -184,7 +191,11 @@ export async function loginUser(credentials) {
         const data = await response.json();
         
         if (response.ok) {
-            localStorage.setItem('shortToken', data.data.token);
+            // 存储UUID格式的短token，支持多种可能的返回字段名
+            const shortToken = data.data?.token || data.data?.short_token || '';
+            if (shortToken) {
+                localStorage.setItem('shortToken', shortToken);
+            }
             // 长token已由后端直接存入cookie，前端不需要管理
             // 确保token存储完成后再跳转
             const result = { success: true, data };

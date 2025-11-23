@@ -17,9 +17,15 @@ import (
 // GetVerCode 获取验证码
 func GetVerCode(email string) *error.Error {
 	verCode := generateVerCode()
-	_, err := global.RDB.HSet(global.CTX, "ver_code", email, verCode, 15*time.Minute).Result()
+	// 先设置哈希字段值
+	_, err := global.RDB.HSet(global.CTX, "ver_code", email, verCode).Result()
 	if err != nil {
 		return error.New(error.RedisError, err, "redis error"+err.Error())
+	}
+	// 然后设置过期时间
+	if err := global.RDB.Expire(global.CTX, "ver_code", 15*time.Minute).Err(); err != nil {
+		ggl.Error("设置验证码过期时间失败", ggl.Err(err))
+		// 即使过期时间设置失败，也继续发送验证码
 	}
 
 	if err := sendVerCode(email, verCode); err != nil {

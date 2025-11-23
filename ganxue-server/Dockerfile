@@ -20,7 +20,7 @@ WORKDIR /home/ganxue/ganxue-server
 COPY --from=builder /app/ .
 COPY --from=builder /app/server .
 RUN ls -al
-RUN chmod +x wait_for_services.sh
+# RUN chmod +x wait_for_services.sh
 RUN chmod +x server
 
 CMD ["./server"]

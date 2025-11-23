@@ -1,6 +1,168 @@
 import { showToast } from './ui.js';
 import { authRequest, getCookie } from './auth.js';
 
+// 切换用户设置悬浮窗口显示/隐藏
+function toggleUserSettingsModal() {
+    const modal = document.getElementById('userSettingsModal');
+    if (modal) {
+        modal.classList.toggle('show');
+        
+        // 点击遮罩层关闭模态框
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                toggleUserSettingsModal();
+            }
+        });
+        
+        // 阻止模态框内部点击事件冒泡到遮罩层
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        }
+    }
+}
+
+// 初始化用户设置功能
+function initUserSettings() {
+    // 绑定修改用户名按钮事件
+    const updateUsernameBtn = document.getElementById('modalUpdateUsernameBtn');
+    if (updateUsernameBtn) {
+        updateUsernameBtn.addEventListener('click', handleUpdateUsername);
+    }
+    
+    // 绑定确认注销账户按钮事件
+    const deleteAccountBtn = document.getElementById('modalDeleteAccountBtn');
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', handleDeleteAccount);
+    }
+    
+    // 绑定取消注销按钮事件
+    const cancelDeleteBtn = document.getElementById('modalCancelDeleteBtn');
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', () => {
+            document.getElementById('modalConfirmPassword').value = '';
+        });
+    }
+    
+    // 新用户名输入框事件监听
+    const newUsernameInput = document.getElementById('modalNewUsername');
+    if (newUsernameInput) {
+        newUsernameInput.addEventListener('input', () => {
+            // 实时验证用户名长度
+            const username = newUsernameInput.value.trim();
+            const updateButton = document.getElementById('modalUpdateUsernameBtn');
+            
+            if (updateButton) {
+                if (username.length >= 3 && username.length <= 20) {
+                    updateButton.disabled = false;
+                } else {
+                    updateButton.disabled = true;
+                }
+            }
+        });
+    }
+}
+
+// 处理修改用户名
+async function handleUpdateUsername() {
+    const newUsername = document.getElementById('modalNewUsername').value.trim();
+    
+    // 验证用户名格式
+    if (!validateUsername(newUsername)) {
+        showToast('用户名长度必须在3-20个字符之间', 'warning');
+        return;
+    }
+    
+    try {
+        // 调用修改用户名API
+        const response = await authRequest('/api/auth/update-username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ new_username: newUsername })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // 修改成功
+            showToast(data.message || '用户名修改成功！', 'success');
+            
+            // 更新UI显示新用户名
+            document.getElementById('userName').textContent = newUsername;
+            document.getElementById('modalCurrentUserName').textContent = newUsername;
+            document.getElementById('modalNewUsername').value = '';
+            
+            // 可以考虑更新localStorage中的用户信息
+        } else {
+            // 修改失败
+            showToast(data.message || '用户名修改失败', 'error');
+        }
+    } catch (error) {
+        console.error('修改用户名失败:', error);
+        showToast('修改用户名失败，请稍后重试', 'error');
+    }
+}
+
+// 处理注销账户
+async function handleDeleteAccount() {
+    const password = document.getElementById('modalConfirmPassword').value;
+    
+    if (!password) {
+        showToast('请输入密码以确认注销', 'warning');
+        return;
+    }
+    
+    // 二次确认
+    if (!confirm('确定要注销您的账户吗？此操作不可撤销，您的所有数据将被删除！')) {
+        return;
+    }
+    
+    try {
+        // 调用注销账户API
+        const response = await authRequest('/api/auth/delete-account', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ password: password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // 注销成功
+            showToast(data.message || '账户注销成功！', 'success');
+            
+            // 清除登录状态
+            localStorage.removeItem('shortToken');
+            document.cookie = 'longToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            
+            // 延迟跳转到登录页面
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        } else {
+            // 注销失败
+            showToast(data.message || '账户注销失败', 'error');
+            document.getElementById('modalConfirmPassword').value = '';
+        }
+    } catch (error) {
+        console.error('注销账户失败:', error);
+        showToast('注销账户失败，请稍后重试', 'error');
+        document.getElementById('modalConfirmPassword').value = '';
+    }
+}
+
+// 验证用户名
+function validateUsername(username) {
+    return username.length >= 3 && username.length <= 20;
+}
 
 // 检查用户是否已登录
 function checkLogin() {
@@ -40,7 +202,14 @@ async function getUserInfo() {
         const userData = data.data;
 
         // 更新UI
-        document.getElementById('userName').textContent = userData.user_info.user_name || '未知用户';
+        const userNameElement = document.getElementById('userName');
+        userNameElement.textContent = userData.user_info.user_name || '未知用户';
+        
+        // 更新悬浮窗口中的当前用户名
+        const modalCurrentUserName = document.getElementById('modalCurrentUserName');
+        if (modalCurrentUserName) {
+            modalCurrentUserName.textContent = userData.user_info.user_name || '未知用户';
+        }
         // 使用固定头像，不再使用用户名首字母
         document.getElementById('streak_days').textContent = userData.study_stats.streak_days || 0;
         document.getElementById('total_days').textContent = userData.study_stats.total_days || 0;
@@ -78,6 +247,11 @@ function logout() {
     
     // 重定向到登录页面
     window.location.href = 'index.html';
+}
+
+// 跳转到设置页面
+function goToSettings() {
+    window.location.href = 'settings.html';
 }
 
 // 获取目录数据
@@ -164,12 +338,29 @@ function setupSubjectHoverEvents() {
 }
 
 // 页面加载完成后执行
-document.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', async () => {
     // 检查登录状态
-    if (!checkLogin()) return;
+    if (!checkLogin()) {
+        return;
+    }
     
     // 获取用户信息
     await getUserInfo();
+    
+    // 为用户名绑定点击事件，显示悬浮窗口
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) {
+        userNameElement.addEventListener('click', toggleUserSettingsModal);
+    }
+    
+    // 为关闭按钮绑定点击事件
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', toggleUserSettingsModal);
+    }
+    
+    // 初始化用户设置功能
+    initUserSettings();
     
     // 获取目录数据
     const catalogueData = await getCatalogue();
