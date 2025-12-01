@@ -79,7 +79,7 @@
    ```
 
 4. **访问平台**
-   - Web界面：http://localhost
+   - Web界面：http://localhost:8080
    - API服务：http://localhost:8080
 
 ## 开发说明

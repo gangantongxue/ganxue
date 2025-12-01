@@ -1,4 +1,4 @@
-localhost {
+ganxue.top {
     root * /home/ganxue/ganxue-web
 
     # 禁止访问隐藏文件
