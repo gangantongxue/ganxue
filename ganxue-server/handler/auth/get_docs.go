@@ -55,6 +55,8 @@ func GetDocs() app.HandlerFunc {
 			userInfo.CLastChapter = id
 		case "cpp":
 			userInfo.CppLastChapter = id
+		case "cloudcomputing":
+			// CloudComputing课程不需要记录最后学习章节
 		}
 
 		if err := mysql.Update(userInfo); err != nil {

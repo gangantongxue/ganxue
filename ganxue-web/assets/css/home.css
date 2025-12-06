@@ -432,6 +432,10 @@
     background: linear-gradient(45deg, #9a5a7d, #d490b8);
 }
 
+.cloudcomputing-btn {
+    background: linear-gradient(45deg, #5a7d9a, #90b8d4);
+}
+
 /* 固定目录区域样式 */
 .fixed-catalogue {
     width: 100%;

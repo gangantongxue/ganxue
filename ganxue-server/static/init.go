@@ -50,6 +50,15 @@ func Init() {
 			ggl.Error("获取文件内容失败", ggl.Err(err))
 		}
 	}
+	cloudcomputing, err := getAllFilesRecursive("./static/CloudComputing/")
+	if err != nil {
+		ggl.Error("获取文件失败", ggl.Err(err))
+	}
+	for _, file := range cloudcomputing {
+		if err := getFileContent(&data, file); err != nil {
+			ggl.Error("获取文件内容失败", ggl.Err(err))
+		}
+	}
 
 	for _, v := range data {
 		if v.M.ID != "" {

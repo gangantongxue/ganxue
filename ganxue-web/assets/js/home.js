@@ -219,9 +219,11 @@ async function getUserInfo() {
             const goLastChapter = userData.study_stats.go_last_chapter === "" ? "0000" : userData.study_stats.go_last_chapter;
             const cLastChapter = userData.study_stats.c_last_chapter === ""? "1000" : userData.study_stats.c_last_chapter;
             const cppLastChapter = userData.study_stats.cpp_last_chapter === ""? "2000" : userData.study_stats.cpp_last_chapter;
+            const cloudcomputingLastChapter = userData.study_stats.cloudcomputing_last_chapter === ""? "3000" : userData.study_stats.cloudcomputing_last_chapter;
             localStorage.setItem('goLastChapter', goLastChapter);
             localStorage.setItem('cLastChapter', cLastChapter);
             localStorage.setItem('cppLastChapter', cppLastChapter);
+            localStorage.setItem('cloudcomputingLastChapter', cloudcomputingLastChapter);
         }
 
         return userData;
@@ -297,6 +299,7 @@ function setupSubjectHoverEvents() {
     const golangBtn = document.getElementById('golangBtn');
     const cBtn = document.getElementById('cBtn');
     const cppBtn = document.getElementById('cppBtn');
+    const cloudcomputingBtn = document.getElementById('cloudcomputingBtn');
     const catalogueTitle = document.getElementById('catalogueTitle');
     const catalogueList = document.getElementById('catalogueList');
     
@@ -313,6 +316,11 @@ function setupSubjectHoverEvents() {
     // C++按钮悬停事件
     cppBtn.addEventListener('mouseenter', () => {
         showCatalogue('cpp', 'C++ 目录');
+    });
+    
+    // CloudComputing按钮悬停事件
+    cloudcomputingBtn.addEventListener('mouseenter', () => {
+        showCatalogue('cloudcomputing', 'CloudComputing 目录');
     });
     
     // 显示指定科目的目录
@@ -400,5 +408,16 @@ window.addEventListener('DOMContentLoaded', async () => {
         localStorage.setItem('nowGroup','cpp')
         // 跳转到学习页面，并传递章节ID
         window.location.href = `learn.html?id=${lastChapter}&group=cpp`;
+    });
+    
+    // 绑定CloudComputing按钮事件
+    document.getElementById('cloudcomputingBtn').addEventListener('click', () => {
+        showToast('即将开始CloudComputing学习之旅！', 'success');
+        // 获取上次学习的章节ID，如果没有则默认为'3000'
+        const lastChapter = localStorage.getItem('cloudcomputingLastChapter') || '3000';
+
+        localStorage.setItem('nowGroup','cloudcomputing')
+        // 跳转到学习页面，并传递章节ID
+        window.location.href = `learn.html?id=${lastChapter}&group=cloudcomputing`;
     });
 });

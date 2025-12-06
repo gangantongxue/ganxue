@@ -58,39 +58,65 @@ function goHint(editor) {
 }
 
 // 初始化CodeMirror编辑器
-function initCodeEditor(code) {
+function initCodeEditor(code, group) {
     // 保存初始代码用于重置
     originalCode = code || '';
     
+    // 根据课程组设置编辑器模式
+    let mode = 'text/x-go'; // 默认Go语言模式
+    let hintFunction = goHint; // 默认Go语言提示
+    
+    switch (group) {
+        case 'c':
+            mode = 'text/x-csrc';
+            break;
+        case 'cpp':
+            mode = 'text/x-c++src';
+            break;
+        case 'cloudcomputing':
+            mode = 'text/plain'; // CloudComputing课程不需要语法高亮
+            hintFunction = null; // CloudComputing课程不需要代码提示
+            break;
+    }
+    
     if (editor) {
-        // 如果编辑器已存在，直接更新内容
+        // 如果编辑器已存在，更新内容和模式
         editor.setValue(originalCode);
+        editor.setOption('mode', mode);
+        editor.setOption('hintOptions', {
+            hint: hintFunction,
+            completeSingle: false,
+            alignWithWord: true,
+            closeOnUnfocus: true
+        });
     } else {
         // 初始化编辑器
         editor = CodeMirror(document.getElementById('codeEditor'), {
             value: originalCode,
-            mode: 'text/x-go', // Go语言模式
+            mode: mode,
             theme: 'dracula',  // 使用dracula主题
             lineNumbers: true,
             indentUnit: 4,
             autoCloseBrackets: true,
             matchBrackets: true,
             lineWrapping: true,
-            extraKeys: {"Ctrl-Space": "autocomplete"}, // 添加快捷键触发自动补全
+            extraKeys: hintFunction ? {"Ctrl-Space": "autocomplete"} : {}, // 只有非CloudComputing课程才添加自动补全快捷键
             hintOptions: {
-                hint: goHint,
+                hint: hintFunction,
                 completeSingle: false, // 当只有一个匹配项时不自动补全
                 alignWithWord: true,   // 提示框与当前单词对齐
                 closeOnUnfocus: true   // 失去焦点时关闭提示框
             }
         });
         
-        // 监听输入事件，实时显示代码提示
-        editor.on("inputRead", function(cm, change) {
-            if (change.origin !== "complete" && /[\w$]/.test(change.text[0])) {
-                cm.showHint();
-            }
-        });
+        // 只有非CloudComputing课程才添加实时提示
+        if (hintFunction) {
+            editor.on("inputRead", function(cm, change) {
+                if (change.origin !== "complete" && /[\w$]/.test(change.text[0])) {
+                    cm.showHint();
+                }
+            });
+        }
         
         // 编辑器自适应大小
         window.addEventListener('resize', () => {
@@ -139,6 +165,8 @@ async function getDocContent(group, docId) {
                 subjectId = '1';
             } else if (docId.startsWith('cpp')) {
                 subjectId = '2';
+            } else if (docId.startsWith('cloudcomputing')) {
+                subjectId = '3';
             }
             // 构建新的四位数字ID: 科目ID + 三位章节号
             docId = subjectId + numPart.padStart(3, '0');
@@ -171,6 +199,9 @@ async function getDocContent(group, docId) {
                     break;
                 case 'cpp':
                     localStorage.setItem('cppLastChapter', docId);
+                    break;
+                case 'cloudcomputing':
+                    localStorage.setItem('cloudcomputingLastChapter', docId);
                     break;
             }
         }
@@ -214,8 +245,8 @@ async function loadChapter(group, chapterId) {
         // 渲染Markdown内容
         document.getElementById('docContent').innerHTML = renderMarkdown(docData.content);
         
-        // 初始化代码编辑器
-        initCodeEditor(docData.code);
+        // 初始化代码编辑器，根据课程组设置不同的编辑器模式
+        initCodeEditor(docData.code, group);
         
         // 更新URL参数
         const url = new URL(window.location.href);
@@ -309,9 +340,25 @@ async function getUserInfo() {
 // 提交代码
 async function submitCode() {
     try {
-        // 获取当前章节编号
+        // 获取当前章节编号和课程组
         const currentId = getUrlParam('id') || '0000';
         const group = getUrlParam('group') || 'golang';
+        
+        // 检查是否为CloudComputing课程，如果是则不执行代码
+        if (group === 'cloudcomputing') {
+            // 显示提示信息
+            const outputContainer = document.getElementById('outputContainer');
+            const outputContent = document.getElementById('outputContent');
+            outputContainer.classList.remove('collapsed');
+            document.querySelector('.toggle-icon').style.transform = 'rotate(0deg)';
+            
+            outputContent.textContent = '该课程不需要运行代码';
+            outputContent.classList.remove('placeholder', 'success', 'error', 'warning');
+            outputContent.classList.add('info');
+            showToast('该课程不需要运行代码', 'info');
+            return;
+        }
+        
         // 获取编辑器代码
         const code = editor.getValue();
 
