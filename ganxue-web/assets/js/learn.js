@@ -1,6 +1,6 @@
 // 学习页面功能
 import { showToast } from './ui.js';
-import { authRequest, getCookie } from './auth.js';
+import { authRequest, getCookie, logout } from './auth.js';
 
 // 全局变量
 let editor; // CodeMirror编辑器实例
@@ -220,15 +220,13 @@ async function getDocContent(group, docId) {
 }
 
 // 退出登录
-function logout() {
-    // 清除短token
-    localStorage.removeItem('shortToken');
-    // 长token由后端管理，这里应该调用后端接口清除cookie
-    // 临时方案：仍然在前端清除cookie，后续应改为调用后端接口
-    document.cookie = 'longToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    
-    // 重定向到登录页面
-    window.location.href = 'index.html';
+async function handleLogout() {
+    try {
+        await logout();
+    } catch (error) {
+        console.error('登出失败:', error);
+        showToast('登出失败，请稍后重试', 'error');
+    }
 }
 
 // 加载章节内容
@@ -447,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('backHomeBtn').addEventListener('click', () => {
         window.location.href = 'home.html';
     });
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     document.getElementById('prevChapterBtn').addEventListener('click', prevChapter);
     document.getElementById('nextChapterBtn').addEventListener('click', nextChapter);
     document.getElementById('resetCodeBtn').addEventListener('click', resetCode);

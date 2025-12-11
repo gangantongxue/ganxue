@@ -96,6 +96,13 @@ export async function authRequest(url, options = {}) {
             response = await fetch(url, options);
         }
         
+        // 检查响应头中是否有新的token
+        const newToken = response.headers.get('X-New-Token') || response.headers.get('New-Access-Token');
+        if (newToken) {
+            console.log('从响应头获取到新的shortToken:', newToken);
+            localStorage.setItem('shortToken', newToken);
+        }
+        
         // 如果重试后仍然是500，显示友好的错误提示
         if (response.status === 500) {
             console.error('服务器错误，请稍后重试');
@@ -254,6 +261,55 @@ export async function resetPassword(resetData) {
         return { success: response.ok, data };
     } catch (error) {
         console.error('重置密码请求错误:', error);
+        // 处理特定的500服务器错误
+        if (error.message === 'SERVER_ERROR_500') {
+            return { success: false, data: { message: '服务器暂时不可用，请稍后重试' } };
+        }
+        throw error;
+    }
+}
+
+// 用户登出
+export async function logout() {
+    try {
+        // 直接使用fetch而不是authRequest，避免401处理逻辑
+        const shortToken = localStorage.getItem('shortToken');
+        const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': shortToken ? `Bearer ${shortToken}` : ''
+            },
+            credentials: 'include'
+        });
+
+        // 调试信息
+        console.log('Logout response status:', response.status);
+        console.log('Logout response headers:', response.headers);
+        
+        // 先尝试获取响应文本
+        const responseText = await response.text();
+        console.log('Logout response text:', responseText);
+
+        if (response.ok) {
+            // 清除localStorage中的shortToken
+            localStorage.removeItem('shortToken');
+            // 跳转到登录页面
+            window.location.href = 'index.html';
+            return { success: true };
+        } else {
+            // 尝试解析为JSON，如果失败则使用文本
+            let data;
+            try {
+                data = responseText ? JSON.parse(responseText) : { message: '未知错误' };
+            } catch (jsonError) {
+                console.error('解析JSON失败:', jsonError);
+                data = { message: responseText || '服务器返回空响应' };
+            }
+            return { success: false, data };
+        }
+    } catch (error) {
+        console.error('登出请求错误:', error);
         // 处理特定的500服务器错误
         if (error.message === 'SERVER_ERROR_500') {
             return { success: false, data: { message: '服务器暂时不可用，请稍后重试' } };

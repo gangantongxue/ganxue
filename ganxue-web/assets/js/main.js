@@ -1,9 +1,32 @@
 // 主要的JavaScript文件
-import { validateEmail, registerUser, loginUser, deleteUser, resetPassword, getCaptcha } from './auth.js';
+import { validateEmail, registerUser, loginUser, deleteUser, resetPassword, getCaptcha, getCookie, authRequest } from './auth.js';
 import { showLoginForm, showRegisterForm, showResetPasswordForm, startCountdown, showToast, showConfirmDialog, initPasswordToggles } from './ui.js';
 
 // 初始化密码显示/隐藏功能
 initPasswordToggles();
+
+// 自动登录检查
+async function checkAutoLogin() {
+    try {
+        // 发送请求到后端检查自动登录token
+        const response = await authRequest('/api/open/check-auto-login', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (response.ok) {
+            // 自动登录成功，跳转到home.html
+            window.location.href = 'home.html';
+        }
+    } catch (error) {
+        console.log('自动登录检查:', error);
+        // 自动登录检查失败或未登录，不做任何操作，继续显示登录页面
+    }
+}
+
+// 页面加载时检查自动登录
+window.addEventListener('load', checkAutoLogin);
 
 // 表单切换事件
 window.login = showLoginForm;
@@ -139,16 +162,11 @@ document.getElementById('login').addEventListener('submit', async function(e) {
     }
 
     try {
-        const credentials = { email, password };
+        const credentials = { email, password, autoLogin: checkbox.checked };
         const { success, data } = await loginUser(credentials);
         
         if (success) {
-            if (checkbox.checked) {
-                // 记住登录状态，存储邮箱
-                setCookie('rememberedEmail', email, 30);
-            } else {
-                document.cookie = 'rememberedEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            }
+            // 自动登录状态由后端处理，前端不再需要存储邮箱
 
             showToast('登录成功！', 'success');
             this.reset();

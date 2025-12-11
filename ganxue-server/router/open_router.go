@@ -13,4 +13,5 @@ func OpenRouter() {
 	OpenGroup.GET("/ver-code", open.VerCode())
 	OpenGroup.GET("/delete-user", open.DeleteUser())
 	OpenGroup.GET("/download/mingw", open.DownloadMingw())
+	OpenGroup.GET("/check-auto-login", open.CheckAutoLogin())
 }

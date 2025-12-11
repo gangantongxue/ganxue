@@ -84,6 +84,48 @@ func RefreshShortToken(oldShortToken string, userID uint) (string, *mError.Error
 	return newShortToken, nil
 }
 
+// GenerateAutoLoginToken 生成自动登录token
+func GenerateAutoLoginToken(userID uint) (string, *mError.Error) {
+	// 生成token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID": userID,
+		"autoLogin": true,
+		"exp":    time.Now().Add(time.Hour * 24 * 7).Unix(),
+	})
+
+	// 生成token字符串
+	tokenString, err := token.SignedString([]byte(os.ExpandEnv("$JWT_SECRET")))
+	if err != nil {
+		return "", mError.New(mError.GenerateTokenError, err, "生成自动登录token失败")
+	}
+	return tokenString, nil
+}
+
+// ParseAutoLoginToken 解析自动登录token
+func ParseAutoLoginToken(tokenString string) (uint, *mError.Error) {
+	// 解析token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.ExpandEnv("$JWT_SECRET")), nil
+	})
+	if err != nil {
+		return 0, mError.New(mError.ParseTokenError, err, "解析自动登录token失败")
+	}
+
+	// 获取token中的claims信息
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return 0, mError.New(mError.ParseTokenError, err, "解析自动登录token失败")
+	}
+	
+	// 验证是否是自动登录token
+	autoLogin, ok := claims["autoLogin"].(bool)
+	if !ok || !autoLogin {
+		return 0, mError.New(mError.ParseTokenError, err, "不是有效的自动登录token")
+	}
+	
+	return uint(claims["userID"].(float64)), nil
+}
+
 // LogoutUser 用户登出，删除所有短token
 func LogoutUser(userID uint) *mError.Error {
 	err := token_storage.DeleteAllUserShortTokens(userID)

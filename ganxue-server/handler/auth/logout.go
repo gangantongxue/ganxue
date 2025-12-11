@@ -5,6 +5,7 @@ import (
 	"ganxue-server/utils/token"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/gangantongxue/ggl"
 )
 
@@ -25,6 +26,18 @@ func Logout() app.HandlerFunc {
 			ctx.JSON(500, map[string]string{"message": "登出失败"})
 			return
 		}
+
+		// 删除自动登录token cookie
+		ctx.SetCookie(
+			"auto_login_token",
+			"",
+			-1, // 设置过期时间为过去
+			"/",
+			"",
+			protocol.CookieSameSiteNoneMode,
+			false, // 不设置Secure
+			true,  // 设置HttpOnly
+		)
 
 		ctx.JSON(200, map[string]string{"message": "登出成功"})
 	}

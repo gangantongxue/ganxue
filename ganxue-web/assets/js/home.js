@@ -1,5 +1,5 @@
 import { showToast } from './ui.js';
-import { authRequest, getCookie } from './auth.js';
+import { authRequest, getCookie, logout } from './auth.js';
 
 // 切换用户设置悬浮窗口显示/隐藏
 function toggleUserSettingsModal() {
@@ -168,13 +168,15 @@ function validateUsername(username) {
 function checkLogin() {
     const shortToken = localStorage.getItem('shortToken');
     const longToken = getCookie('longToken');
+    const autoLoginToken = getCookie('auto_login_token');
     
     console.log('检查登录状态：', {
         shortToken: shortToken ? '已存在' : 'undefined',
-        longToken: longToken ? '已存在' : 'undefined'
+        longToken: longToken ? '已存在' : 'undefined',
+        autoLoginToken: autoLoginToken ? '已存在' : 'undefined'
     });
     
-    if (!shortToken && !longToken) {
+    if (!shortToken && !longToken && !autoLoginToken) {
         console.log('未检测到登录凭证，重定向到登录页面');
         window.location.href = 'index.html';
         return false;
@@ -240,15 +242,13 @@ async function getUserInfo() {
 }
 
 // 退出登录
-function logout() {
-    // 清除短token
-    localStorage.removeItem('shortToken');
-    // 长token由后端管理，这里应该调用后端接口清除cookie
-    // 临时方案：仍然在前端清除cookie，后续应改为调用后端接口
-    document.cookie = 'longToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    
-    // 重定向到登录页面
-    window.location.href = 'index.html';
+async function handleLogout() {
+    try {
+        await logout();
+    } catch (error) {
+        console.error('登出失败:', error);
+        showToast('登出失败，请稍后重试', 'error');
+    }
 }
 
 // 跳转到设置页面
@@ -375,7 +375,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     renderCatalogue(catalogueData);
     
     // 绑定退出登录按钮事件
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     
     // 绑定Golang按钮事件
     document.getElementById('golangBtn').addEventListener('click', () => {
