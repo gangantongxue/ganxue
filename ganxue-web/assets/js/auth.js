@@ -43,8 +43,12 @@ async function refreshToken() {
         return newToken;
     } catch (error) {
         console.error('刷新token失败:', error);
-        // 如果刷新失败，可能需要重新登录
-        window.location.href = 'index.html';
+        // 只在有token的情况下才重定向，避免无限循环
+        // 如果没有token，直接抛出错误，让调用者处理
+        const shortToken = localStorage.getItem('shortToken');
+        if (shortToken) {
+            window.location.href = 'index.html';
+        }
         throw error;
     }
 }
@@ -72,8 +76,8 @@ export async function authRequest(url, options = {}) {
     try {
         let response = await fetch(url, options);
         
-        // 如果返回401状态码，尝试刷新token
-        if (response.status === 401) {
+        // 如果返回401状态码，并且有shortToken，才尝试刷新token
+        if (response.status === 401 && shortToken) {
             console.log('Token过期，尝试刷新...');
             
             // 刷新token
