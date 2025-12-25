@@ -2,7 +2,9 @@ module ganxue-runcode
 
 go 1.24.1
 
-require github.com/go-redis/redis/v8 v8.11.5
+require (
+	github.com/go-redis/redis/v8 v8.11.5
+)
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect

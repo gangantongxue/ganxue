@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"syscall"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -59,9 +58,6 @@ func getCodeAndInput(id string) (string, string, error) {
 
 // runCode 运行用户代码
 func runCode(cmd *exec.Cmd, id string, input string, timeoutCTX context.Context) {
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
 	// 交互式输入
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -160,28 +156,6 @@ func runCode(cmd *exec.Cmd, id string, input string, timeoutCTX context.Context)
 
 	if err := cmd.Wait(); err != nil {
 		if errors.Is(timeoutCTX.Err(), context.DeadlineExceeded) {
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
-				log.Println("kill进程组失败", err)
-				output, err := json.Marshal(OutputData{
-					Status: 1,
-					Output: "kill进程组失败",
-				})
-				if err != nil {
-					log.Println("marshal output失败", err)
-					return
-				}
-				err = db.RPush(context.Background(), "runcode-finish"+id, output).Err()
-				if err != nil {
-					log.Println("RPush失败", err)
-					return
-				}
-				err = db.Expire(context.Background(), "runcode-finish"+id, 15*time.Minute).Err()
-				if err != nil {
-					log.Println("设置过期时间失败", err)
-					return
-				}
-				return
-			}
 			log.Println("执行超时", err)
 			output, err := json.Marshal(OutputData{
 				Status: 1,
@@ -327,9 +301,6 @@ func runGoCode() {
 
 		// 编译代码
 		buildCmd := exec.CommandContext(timeoutCTX, "go", "build", "-o", "/home/ganxue/ganxue-runcode/go/main", "/home/ganxue/ganxue-runcode/go/main.go")
-		buildCmd.SysProcAttr = &syscall.SysProcAttr{
-			Setpgid: true,
-		}
 
 		// 设置编译的输出捕获
 		var buildOutput bytes.Buffer
@@ -426,9 +397,6 @@ func runCppCode() {
 
 		// 编译代码
 		buildCmd := exec.CommandContext(timeoutCTX, "g++", "/home/ganxue/ganxue-runcode/cpp/main.cpp", "-o", "/home/ganxue/ganxue-runcode/cpp/main")
-		buildCmd.SysProcAttr = &syscall.SysProcAttr{
-			Setpgid: true,
-		}
 
 		// 设置编译的输出捕获
 		var buildOutput bytes.Buffer
@@ -526,9 +494,6 @@ func runCCode() {
 
 		// 编译代码
 		buildCmd := exec.CommandContext(timeoutCTX, "gcc", "/home/ganxue/ganxue-runcode/c/main.c", "-o", "/home/ganxue/ganxue-runcode/c/main")
-		buildCmd.SysProcAttr = &syscall.SysProcAttr{
-			Setpgid: true,
-		}
 
 		// 设置编译的输出捕获
 		var buildOutput bytes.Buffer
