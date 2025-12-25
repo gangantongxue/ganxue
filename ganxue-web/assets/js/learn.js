@@ -337,7 +337,27 @@ async function getUserInfo() {
 
 // 提交代码
 async function submitCode() {
+    // 获取运行代码按钮元素
+    const submitBtn = document.getElementById('submitCodeBtn');
+    // 保存原始按钮文本
+    const originalBtnText = submitBtn.textContent;
+    
+    // 需要阻塞的按钮ID列表
+    const buttonsToBlock = ['backHomeBtn', 'logoutBtn', 'prevChapterBtn', 'nextChapterBtn', 'resetCodeBtn'];
+    
     try {
+        // 修改按钮状态：设置为"运行中"并禁用
+        submitBtn.textContent = '运行中...';
+        submitBtn.disabled = true;
+        
+        // 禁用所有需要阻塞的按钮
+        buttonsToBlock.forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = true;
+            }
+        });
+        
         // 获取当前章节编号和课程组
         const currentId = getUrlParam('id') || '0000';
         const group = getUrlParam('group') || 'golang';
@@ -356,6 +376,16 @@ async function submitCode() {
             showToast('该课程不需要运行代码', 'info');
             return;
         }
+
+        // 显示提示信息
+            const outputContainer = document.getElementById('outputContainer');
+            const outputContent = document.getElementById('outputContent');
+            outputContainer.classList.remove('collapsed');
+            document.querySelector('.toggle-icon').style.transform = 'rotate(0deg)';
+            
+            outputContent.textContent = '运行中...';
+            outputContent.classList.remove('placeholder', 'success', 'error', 'warning');
+            outputContent.classList.add('info');
         
         // 获取编辑器代码
         const code = editor.getValue();
@@ -376,8 +406,8 @@ async function submitCode() {
         const data = await response.json();
 
         // 显示输出结果
-        const outputContainer = document.getElementById('outputContainer');
-        const outputContent = document.getElementById('outputContent');
+        // const outputContainer = document.getElementById('outputContainer');
+        // const outputContent = document.getElementById('outputContent');
         outputContainer.classList.remove('collapsed');
         document.querySelector('.toggle-icon').style.transform = 'rotate(0deg)';
 
@@ -426,6 +456,20 @@ async function submitCode() {
         outputContent.classList.remove('placeholder', 'success', 'warning');
         outputContent.classList.add('error');
         showToast('提交代码失败，请重试', 'error');
+    } finally {
+        // 恢复按钮原始状态
+        if (submitBtn) {
+            submitBtn.textContent = originalBtnText;
+            submitBtn.disabled = false;
+        }
+        
+        // 恢复所有被阻塞按钮的可用状态
+        buttonsToBlock.forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.disabled = false;
+            }
+        });
     }
 }
 

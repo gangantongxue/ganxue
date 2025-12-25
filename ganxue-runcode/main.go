@@ -158,7 +158,7 @@ func runCode(cmd *exec.Cmd, id string, input string, timeoutCTX context.Context)
 		if errors.Is(timeoutCTX.Err(), context.DeadlineExceeded) {
 			log.Println("执行超时", err)
 			output, err := json.Marshal(OutputData{
-				Status: 1,
+				Status: 2,
 				Output: "执行超时",
 			})
 			if err != nil {
