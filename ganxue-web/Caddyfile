@@ -9,7 +9,27 @@ ganxue.top {
         respond "Forbidden" 403
     }
 
+    @cors_preflight {
+        method OPTIONS
+        path /api/*
+    }
+
+    # 处理 OPTIONS 预检请求（复杂跨域请求必配）
+    handle @cors_preflight {
+        header Access-Control-Allow-Origin "https://ganxue.top"
+        header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
+        header Access-Control-Allow-Credentials "true"
+        header Access-Control-Max-Age "86400" # 预检缓存1天
+        respond "" 204
+    }
+
+    # 给 API 请求添加跨域响应头
     handle_path /api/* {
+        header Access-Control-Allow-Origin "https://ganxue.top" always
+        header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always
+        header Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With" always
+        header Access-Control-Allow-Credentials "true" always
         reverse_proxy ganxue_server:8080
     }
 
