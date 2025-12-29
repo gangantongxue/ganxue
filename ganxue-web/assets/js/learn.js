@@ -497,5 +497,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function renderMarkdown(markdown) {
-    return marked.parse(markdown);
+    const html = marked.parse(markdown);
+    
+    // 创建临时div来处理HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // 查找所有下载链接并添加点击事件处理
+    const downloadLinks = tempDiv.querySelectorAll('a[href="/api/open/download/mingw"]');
+    downloadLinks.forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault(); // 阻止默认链接行为
+            
+            try {
+                const response = await authRequest('api/open/download/mingw', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/zip'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('下载失败');
+                }
+                
+                // 处理下载响应
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'MinGW.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showToast('下载成功', 'success');
+            } catch (error) {
+                console.error('下载失败:', error);
+                showToast('下载失败，请重试', 'error');
+            }
+        });
+    });
+    
+    return tempDiv.innerHTML;
 }

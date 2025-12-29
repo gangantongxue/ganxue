@@ -1,7 +1,8 @@
 .env
-.claude
-.vscode
-.idea
+.claude/
+.vscode/
+.idea/
+.trae/
 /ganxue-server/.idea
 /ganxue-server/.vscode
 /ganxue-server/log
@@ -11,3 +12,4 @@ CLAUDE.md
 ganxue-server/static/download/MinGW.zip
 TRAE.md
 *.tar
+课程设计报告.md
