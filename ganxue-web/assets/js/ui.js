@@ -14,6 +14,7 @@ export function showLoginForm() {
     btn.style.left = '0';
 }
 
+// 注册表单切换动画
 export function showRegisterForm() {
     const loginForm = document.getElementById('login');
     const registerForm = document.getElementById('register');
@@ -26,6 +27,7 @@ export function showRegisterForm() {
     btn.style.left = '110px';
 }
 
+// 忘记密码表单切换动画
 export function showResetPasswordForm() {
     const loginForm = document.getElementById('login');
     const registerForm = document.getElementById('register');
@@ -48,6 +50,7 @@ export function showResetPasswordForm() {
 let countdown = 60;
 let timer = null;
 
+// 开始倒计时
 export function startCountdown(button) {
     button.disabled = true;
     button.textContent = `${countdown}秒后重新获取`;
